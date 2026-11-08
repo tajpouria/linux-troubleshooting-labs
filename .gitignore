@@ -1,0 +1,16 @@
+# Vagrant machine state, per lab folder. This also holds the extra-disk
+# .vmdk files that the Vagrantfiles create.
+.vagrant/
+
+# VMware disk images and lock files, in case one ends up outside .vagrant/
+*.vmdk
+*.lck
+
+# Logs
+*.log
+
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
