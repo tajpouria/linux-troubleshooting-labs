@@ -29,7 +29,10 @@ with an automated check.
 
 1. **One-time setup.** Install Homebrew, VMware Fusion, Vagrant, the Vagrant
    VMware Utility and the plugin by following [docs/setup-macos.md](docs/setup-macos.md).
-2. **Start a level:**
+2. **Check you're ready.** Each level's README begins with *What you should
+   know before you start*: the concepts it assumes and a short self-check. It
+   contains no spoilers.
+3. **Start a level:**
 
    ```bash
    cd lab-01
@@ -39,7 +42,7 @@ with an automated check.
    cat /etc/lab/ticket.md         # the incident ticket (also in lab-01/TICKET.md)
    ```
 
-3. **Troubleshoot** inside the VM (you have `sudo`). Check your progress at any
+4. **Troubleshoot** inside the VM (you have `sudo`). Check your progress at any
    time:
 
    ```bash
@@ -50,7 +53,7 @@ with an automated check.
    Each check prints PASS or FAIL. It tells you *what* is still wrong from the
    user's point of view, never *why*.
 
-4. **Stuck?** Open the level's `HINTS.md`. Every issue has hints that go from
+5. **Stuck?** Open the level's `HINTS.md`. Every issue has hints that go from
    vague to specific. **Done?** Write your post-incident note, then compare it
    with `SOLUTIONS.md`.
 
@@ -143,7 +146,12 @@ Every level follows the same contract, so the tooling and your habits carry over
    **outcomes, not causes**: "site returns 200 from outside", not "port 80 is
    allowed in ufw". Add guard checks for bad fixes such as a disabled firewall,
    `chmod 777`, or running as root, and for persistence across reboots.
-4. **Docs:** `TICKET.md` gives symptoms only. `HINTS.md` uses collapsed
+4. **Docs:** the level's `README.md` has a **"What you should know before you
+   start"** section. It lists the background concepts a player needs, a short
+   self-check, and the tools they *don't* need to know yet. Describe areas of
+   knowledge, never the defects: "Linux file permissions" is fine, but "a
+   config file the service can't read" gives the answer away. `TICKET.md`
+   gives symptoms only. `HINTS.md` uses collapsed
    `<details>` blocks from vague to specific. `SOLUTIONS.md` covers the root
    cause, diagnosis, fix, what *not* to do, prevention, and the concepts to learn.
 5. **Difficulty knobs** for later levels: fewer clues in the ticket, more

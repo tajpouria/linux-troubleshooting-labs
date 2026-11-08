@@ -14,6 +14,44 @@ can reveal the next.
 `du`), finding processes and the files they hold open, Linux file permissions,
 nginx as a reverse proxy, ports and listening sockets, and the host firewall.
 
+## What you should know before you start
+
+This is a beginner level, but it assumes you're comfortable on a Linux command
+line. You don't need to be an expert in any of the areas below. You need to know
+what each one *is*, so you know where to look. The lab teaches the rest.
+
+- **Shell basics.** Moving around the filesystem, reading files with `cat`,
+  `less`, `tail` and `grep`, piping commands together, and editing a root-owned
+  file with `sudo` and an editor (`nano` or `vim`).
+- **Users, groups and permissions.** Reading `ls -l` output: owner, group, and
+  the `rwx` bits for owner, group and others. What `chmod` and `chown` do, and
+  why services usually run as their own unprivileged user instead of root.
+- **Processes.** What a process and a PID are, listing them with `ps` or `top`,
+  and stopping one with `kill`.
+- **systemd services.** That background programs run as *units*, and how to
+  start, stop, restart and check the status of one with `systemctl`. That
+  services write their logs to the systemd journal.
+- **Disks and mounts.** What a mount point is, that a directory can live on its
+  own volume with its own free space, and how to read the output of `df -h`.
+- **Networking basics.** IP addresses and ports, what it means for a program
+  to *listen* on a port, the difference between `localhost` and the server's
+  network address, and what a host firewall does in general.
+- **HTTP and web servers.** Fetching a page with `curl`, the HTTP status code
+  families (2xx, 4xx, 5xx), and the idea of a *reverse proxy*: a web server
+  that takes requests on port 80 and passes them to an application running on
+  another port.
+
+**Quick self-check.** If you can answer these without looking anything up,
+you're ready:
+
+1. A file is listed as `-rw-r----- 1 root adm`. Who can read it, and who can
+   change it?
+2. How do you see whether a systemd service is running, and how do you see its
+   most recent log lines?
+3. A program "listens on `127.0.0.1:5000`". Can another machine connect to it?
+4. What's the difference between an HTTP 404 and an HTTP 503?
+
+
 ## Start
 
 Do the [one-time setup](../docs/setup-macos.md) first, then:
