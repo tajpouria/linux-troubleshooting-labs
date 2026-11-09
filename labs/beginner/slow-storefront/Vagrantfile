@@ -1,0 +1,25 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Linux Troubleshooting Labs: Beginner, "The storefront is crawling"
+#
+#   vagrant up                      # build web-02 and start the incident (~5 min)
+#   vagrant snapshot save broken    # your reset point: take it right away
+#   vagrant ssh                     # go fix it, then check with: sudo lab-check
+#
+# Hosts: macOS on Apple Silicon with VMware Fusion, or Windows with VirtualBox.
+# The VM plumbing shared by all labs lives in common/vagrant/lab.rb.
+
+Vagrant.require_version ">= 2.4.0" # config.vm.box_architecture needs 2.4+
+
+require_relative "../../../common/vagrant/lab"
+
+Lab.define(__dir__,
+  id:         "slow-storefront",
+  level:      "Beginner",
+  title:      "The storefront is crawling",
+  hostname:   "web-02",
+  host_octet: 12,   # unique per lab: the VM's address on the host-only network
+  cpus:       2,    # the incident is tuned for 2 vCPUs
+  memory:     1536, # MB
+)

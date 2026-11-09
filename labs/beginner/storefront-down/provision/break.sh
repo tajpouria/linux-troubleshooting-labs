@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #  ███  SPOILER WARNING  ███
-#  This script injects the lab-01 defects. Don't read it until you've solved
+#  This script injects the storefront-down defects. Don't read it until you've solved
 #  the lab (or given up and read SOLUTIONS.md).
 #
 # It replays a bad night on web-01:
@@ -20,7 +20,7 @@ set -Eeuo pipefail
 
 MARKER=/var/lib/lab/provisioned
 if [[ -e $MARKER ]]; then
-  echo "==> [break] lab-01 incident already injected; not touching it."
+  echo "==> [break] The incident is already injected; not touching it."
   exit 0
 fi
 

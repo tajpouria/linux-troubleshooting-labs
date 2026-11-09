@@ -1,4 +1,4 @@
-# Lab 01 solutions
+# Solutions: The storefront is down
 
 > **Spoilers.** Try the lab and [HINTS.md](HINTS.md) first. You'll learn far
 > more from fighting with it for a while.
@@ -9,7 +9,7 @@ Four independent root causes stacked on top of each other. Each one hid the
 next, which is typical of real incidents after a messy change window.
 
 ```text
-  Your Mac ---X---> host firewall (ufw): default deny, only 22/tcp allowed ...... Issue A
+  Your computer -X-> host firewall (ufw): default deny, only 22/tcp allowed ...... Issue A
                           |
                        nginx :80 ---X---> upstream 127.0.0.1:8081 ............... Issue D
                                           (nothing listens there)
@@ -33,10 +33,12 @@ next, which is typical of real incidents after a messy change window.
 ## Walkthrough: one efficient path
 
 You might take a different route, and that's fine. This is the "outside in"
-approach. The sample output uses `172.16.129.11` for web-01 and `172.16.129.1`
-for the Mac. Your subnet will differ.
+approach. The sample output comes from a Mac with VMware Fusion: web-01 is
+`172.16.129.11` and the Mac is `172.16.129.1`. On Windows with VirtualBox you'd
+see `192.168.56.11` and `192.168.56.1`. Device and interface names also differ
+between hypervisors.
 
-**1. Reproduce from the user's side (on the Mac).**
+**1. Reproduce from the user's side (on your computer, the host).**
 
 ```console
 $ curl -v --max-time 5 http://<LAB_IP>/
@@ -56,7 +58,7 @@ HTTP/1.1 502 Bad Gateway
 ```
 
 Inside, you get an answer, but it's a 502. So there are at least two problems:
-something between the Mac and nginx (Issue A), and something behind nginx.
+something between your computer and nginx (Issue A), and something behind nginx.
 
 **3. What does nginx say?**
 
@@ -98,10 +100,10 @@ That's Issue C. Fix it, restart, and the backend is finally `active (running)`.
 **5. Still 502?** nginx is trying `127.0.0.1:8081`, but `ss -tlnp` shows the
 backend on `127.0.0.1:8080`. That's Issue D. Fix it, and `curl localhost` returns 200.
 
-**6. Back on the Mac, still a timeout.** Now that everything inside works, the
-only thing left between the Mac and nginx is the host firewall. That's Issue A.
+**6. Back on your computer, still a timeout.** Now that everything inside works,
+the only thing left between your computer and nginx is the host firewall. That's Issue A.
 
-**7. Verify:** load the page from the Mac, run `sudo lab-check`, then
+**7. Verify:** load the page from your computer, run `sudo lab-check`, then
 `sudo reboot` and check again.
 
 ---
@@ -129,12 +131,12 @@ To                         Action      From
 22/tcp                     ALLOW IN    Anywhere                   # SSH
 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # SSH
 
-$ sudo journalctl -k --since "-5min" | grep 'UFW BLOCK'          # right after a retry from the Mac
+$ sudo journalctl -k --since "-5min" | grep 'UFW BLOCK'          # right after a retry from the host
 ... [UFW BLOCK] IN=eth1 OUT= ... SRC=172.16.129.1 DST=172.16.129.11 ... PROTO=TCP SPT=53122 DPT=80 ... SYN
 ```
 
 (Your interface name may differ.) You can also *watch* the SYNs arrive and go
-unanswered: `sudo tcpdump -ni any tcp port 80`, then retry from the Mac.
+unanswered: `sudo tcpdump -ni any tcp port 80`, then retry from your computer.
 
 **Fix.**
 
@@ -274,8 +276,8 @@ $ systemctl status 1653                            # systemctl accepts a PID: wh
      Active: active (running) since ...
 ```
 
-(The device name may be `/dev/loop0` if the extra disk wasn't attached. That
-makes no difference to the lab.) No `lsof`? Try
+(The device name depends on the hypervisor. On VirtualBox the volume is a loop
+file, so it's `/dev/loop0` or similar. That makes no difference to the lab.) No `lsof`? Try
 `sudo find /proc/*/fd -lname '*(deleted)' -ls`.
 
 **Fix.**
@@ -403,12 +405,12 @@ check that goes *through* the proxy, not just straight to the app.
 ## Verifying the fix
 
 ```bash
-# on the Mac
-open http://<LAB_IP>/            # or: curl -s http://<LAB_IP>/ | grep Pinewood
+# on your computer: open http://<LAB_IP>/ in a browser, or
+curl -s http://<LAB_IP>/ | grep Pinewood     # in Windows PowerShell: curl.exe
 
 # in the VM
 sudo lab-check                     # expect 6/6 PASS
-sudo reboot                        # then: vagrant ssh && sudo lab-check  (still 6/6)
+sudo reboot                        # then vagrant ssh again and: sudo lab-check  (still 6/6)
 ```
 
 ---

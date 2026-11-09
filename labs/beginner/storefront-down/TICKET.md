@@ -12,8 +12,9 @@
 Customers can't load the Pinewood Books storefront at http://<LAB_IP>/.
 The browser spins for a while and then gives up.
 
-(`<LAB_IP>` is web-01's address on your Mac's host-only network. `vagrant up`
-prints it, and the copy of this ticket at /etc/lab/ticket.md has it filled in.)
+(`<LAB_IP>` is web-01's address on your computer's host-only network.
+`vagrant up` prints it, and the copy of this ticket at /etc/lab/ticket.md has it
+filled in.)
 
 ## Timeline (server time)
 
@@ -43,5 +44,6 @@ prints it, and the copy of this ticket at /etc/lab/ticket.md has it filled in.)
 
 ## Access
 
-- From the lab-01 folder on your Mac: `vagrant ssh` (you have sudo).
+- From the lab's folder on your computer (`labs/beginner/storefront-down`):
+  `vagrant ssh` (you have sudo).
 - Check your progress at any time: `sudo lab-check`

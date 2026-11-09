@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Linux Troubleshooting Labs: Beginner, "The storefront is down"
+#
+#   vagrant up                      # build web-01 and start the incident (~5 min)
+#   vagrant snapshot save broken    # your reset point: take it right away
+#   vagrant ssh                     # go fix it, then check with: sudo lab-check
+#
+# Hosts: macOS on Apple Silicon with VMware Fusion, or Windows with VirtualBox.
+# The VM plumbing shared by all labs lives in common/vagrant/lab.rb.
+
+Vagrant.require_version ">= 2.4.0" # config.vm.box_architecture needs 2.4+
+
+require_relative "../../../common/vagrant/lab"
+
+Lab.define(__dir__,
+  id:          "storefront-down",
+  level:       "Beginner",
+  title:       "The storefront is down",
+  hostname:    "web-01",
+  host_octet:  11,   # unique per lab: the VM's address on the host-only network
+  cpus:        2,
+  memory:      2048, # MB
+  # The app's log volume (/var/log/bookshop). VMware Fusion attaches a real 1 GB
+  # disk. On VirtualBox, setup.sh uses a 1 GB loop-file volume instead, which
+  # behaves the same for this lab.
+  extra_disks: [{ name: "logs", size: "1GB" }],
+)

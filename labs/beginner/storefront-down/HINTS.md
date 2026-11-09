@@ -1,4 +1,4 @@
-# Lab 01 hints
+# Hints: The storefront is down
 
 Use these only when you're stuck. Each issue has numbered hints that go from
 vague to specific. Open one, then go back and try again before opening the
@@ -11,8 +11,9 @@ everything is visible.)
 
 ## Before you start: a method (no spoilers)
 
-1. **Reproduce it yourself, from where the users are.** On your Mac:
-   `curl -v --max-time 5 http://<LAB_IP>/`
+1. **Reproduce it yourself, from where the users are.** On your computer (the
+   host, not the VM): `curl -v --max-time 5 http://<LAB_IP>/`. In Windows
+   PowerShell, type `curl.exe`, because plain `curl` there is a different command.
 2. **Work inward, one layer at a time:** network, then web server, then app,
    then the things the app depends on (config, disk, other services).
 3. **At every layer, ask the same three questions.** Is it running? Is it
@@ -28,7 +29,7 @@ Commands worth knowing for this level: `systemctl`, `journalctl`, `ss`, `curl`,
 
 | What you're seeing | lab-check item | Go to |
 |---|---|---|
-| Page times out from the Mac, but `curl` inside the VM gets *some* answer | 3 | [Issue A](#issue-a-it-times-out-from-my-mac) |
+| Page times out from your computer, but `curl` inside the VM gets *some* answer | 3 | [Issue A](#issue-a-it-times-out-from-my-computer) |
 | `bookshop` service is failed or won't stay up | 1 | [Issue B](#issue-b-the-backend-service-wont-start), then [Issue C](#issue-c-the-backend-complains-about-space) |
 | Errors mention space, or `df` and `du` disagree | 1, 4 | [Issue C](#issue-c-the-backend-complains-about-space) |
 | `curl http://localhost/` inside the VM gives a 502 | 2 | [Issue D](#issue-d-502-bad-gateway-from-inside-the-server) |
@@ -37,14 +38,14 @@ Commands worth knowing for this level: `systemctl`, `journalctl`, `ss`, `curl`,
 
 ---
 
-## Issue A: it times out from my Mac
+## Issue A: it times out from my computer
 
 <details><summary>Hint A1</summary>
 
 Compare two vantage points. What happens with `curl -v http://localhost/`
 *inside* the VM, and with `curl -v --max-time 5 http://<LAB_IP>/` *on your
-Mac*? If they behave differently, the problem is somewhere between your Mac and
-the web server process.
+computer*? If they behave differently, the problem is somewhere between your
+computer and the web server process.
 
 </details>
 
@@ -61,8 +62,8 @@ only to localhost?
 <details><summary>Hint A3</summary>
 
 If something is listening on `0.0.0.0:80` but packets from outside still vanish,
-look at the host's own packet filter. Try `sudo ufw status verbose`, and look for
-dropped packets in the kernel log right after you retry from the Mac:
+look at the server's own packet filter. Try `sudo ufw status verbose`, and look for
+dropped packets in the kernel log right after you retry from your computer:
 `sudo journalctl -k --since "-5min" | grep -i block`.
 
 </details>

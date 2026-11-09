@@ -1,5 +1,7 @@
 # Scripts are uploaded into Linux VMs, so they must keep LF line endings
 # even when the repo is checked out on Windows.
 * text=auto eol=lf
-*.sh       text eol=lf
+*.sh        text eol=lf
+*.rb        text eol=lf
+*.py        text eol=lf
 Vagrantfile text eol=lf

@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 #
-# base.sh: common provisioning shared by every lab level. It runs first.
+# base.sh: common provisioning shared by every lab. It runs first.
 #
-# Keep this level-agnostic and defect-free. It:
-#   * refuses to continue unless the guest is ARM64
+# Keep this lab-agnostic and defect-free. It:
+#   * refuses to continue unless the guest has the architecture the host expects
+#     (arm64 on Apple Silicon Macs, amd64 on Windows)
 #   * freezes automatic package updates so every run of a lab is identical
 #   * installs the standard troubleshooting toolbox
 #   * installs the lab helpers: `lab-check`, the ticket, and the login banner
 #
-# Inputs (environment, set by the Vagrantfile): LAB_ID, LAB_TITLE,
-#   LAB_IP (the VM's host-only address, or "auto" to detect it here)
+# Inputs (environment, set by common/vagrant/lab.rb): LAB_ID, LAB_LEVEL,
+#   LAB_TITLE, LAB_ARCH, and LAB_IP (the VM's host-only address, or "auto" to
+#   detect it here)
 # Inputs (uploaded by file provisioners):
 #   /tmp/lab-common.sh  -> /usr/local/lib/lab/lab-common.sh
 #   /tmp/lab-check      -> /usr/local/sbin/lab-check
@@ -19,7 +21,9 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 : "${LAB_ID:?LAB_ID must be set by the Vagrantfile}"
+: "${LAB_LEVEL:?LAB_LEVEL must be set by the Vagrantfile}"
 : "${LAB_TITLE:?LAB_TITLE must be set by the Vagrantfile}"
+: "${LAB_ARCH:?LAB_ARCH must be set by the Vagrantfile}"
 : "${LAB_IP:?LAB_IP must be set by the Vagrantfile}"
 
 log() { printf '==> [base] %s\n' "$*"; }
@@ -41,9 +45,9 @@ retry() {
 
 # --- 1. Architecture guard ---------------------------------------------------
 arch=$(dpkg --print-architecture)
-if [[ $arch != arm64 ]]; then
-  echo "ERROR: these labs expect an ARM64 guest, but this one is '$arch'." >&2
-  echo "       Check config.vm.box_architecture in the Vagrantfile." >&2
+if [[ $arch != "$LAB_ARCH" ]]; then
+  echo "ERROR: on this host the lab expects a '$LAB_ARCH' guest, but this one is '$arch'." >&2
+  echo "       Check config.vm.box_architecture in common/vagrant/lab.rb." >&2
   exit 1
 fi
 log "Guest architecture: $arch ($(uname -m)), kernel $(uname -r)"
@@ -58,7 +62,7 @@ EOF
 systemctl disable --now apt-daily.timer apt-daily-upgrade.timer >/dev/null 2>&1 || true
 
 # --- 3. Troubleshooting toolbox ----------------------------------------------
-# Everything comes from the Ubuntu ports archive, so it's native arm64.
+# Everything comes from the Ubuntu archive for the guest's own architecture.
 PACKAGES=(
   bash-completion bind9-dnsutils curl e2fsprogs htop iproute2 jq less lsof
   ncdu net-tools procps psmisc strace sysstat tcpdump tree ufw util-linux vim
@@ -75,6 +79,9 @@ timedatectl set-timezone UTC >/dev/null 2>&1 || true
 # --- 4. Lab helpers ------------------------------------------------------------
 log "Installing lab helpers (lab-check, ticket, login banner)"
 install -d -m 0755 /usr/local/lib/lab /etc/lab
+# File provisioners copy files byte for byte. .gitattributes keeps them LF, but
+# strip Windows line endings anyway in case a copy was edited on Windows.
+sed -i 's/\r$//' /tmp/lab-common.sh /tmp/lab-check /tmp/lab-ticket.md
 install -m 0644 /tmp/lab-common.sh /usr/local/lib/lab/lab-common.sh
 install -m 0700 /tmp/lab-check /usr/local/sbin/lab-check
 
@@ -93,6 +100,7 @@ rm -f /tmp/lab-common.sh /tmp/lab-check /tmp/lab-ticket.md
 
 cat >/etc/lab/lab.env <<EOF
 LAB_ID="${LAB_ID}"
+LAB_LEVEL="${LAB_LEVEL}"
 LAB_TITLE="${LAB_TITLE}"
 LAB_IP="${LAB_IP}"
 EOF
@@ -102,7 +110,9 @@ cat >/etc/update-motd.d/99-lab <<'EOF'
 . /etc/lab/lab.env 2>/dev/null
 printf '\n'
 printf '  ============================================================\n'
-printf '   Linux Troubleshooting Lab  |  %s: %s\n' "$LAB_ID" "$LAB_TITLE"
+printf '   Linux Troubleshooting Lab  |  %s  |  %s\n' "$LAB_LEVEL" "$LAB_ID"
+printf '   %s\n' "$LAB_TITLE"
+printf '   ------------------------------------------------------------\n'
 printf '   Read the ticket :  cat /etc/lab/ticket.md\n'
 printf '   Check progress  :  sudo lab-check\n'
 printf '  ============================================================\n\n'

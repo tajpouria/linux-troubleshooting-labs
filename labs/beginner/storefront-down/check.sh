@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 #
-# lab-01 check: verifies the outcomes the incident ticket asks for.
+# storefront-down check: verifies the outcomes the incident ticket asks for.
 # Installed in the VM as /usr/local/sbin/lab-check.  Run:  sudo lab-check
 #
 # The output never says *why* something fails, but this source code does hint
 # at it. SPOILER WARNING: read it after you finish.
 
-# shellcheck disable=SC2317  # check_* functions are called indirectly via lab_check
+# shellcheck disable=SC2317,SC2329  # check_* functions are called indirectly via lab_check
 set -uo pipefail
 
-# shellcheck source=../common/lib/lab-common.sh
+# shellcheck source=../../../common/lib/lab-common.sh
 . /usr/local/lib/lab/lab-common.sh
 
 APP_UNIT=bookshop
@@ -103,7 +103,7 @@ lab_begin
 lab_check "Backend application is running and healthy" check_backend
 lab_check "Storefront loads through the web server (http://localhost/)" check_frontend
 lab_check "Storefront is reachable from outside the server" check_external \
-  "Needs a successful page load from your Mac: open http://${LAB_IP:-<lab IP>}/ and re-run."
+  "Needs a successful page load from your computer: open http://${LAB_IP:-<lab IP>}/ and re-run."
 lab_check "Log storage has healthy free space and is stable" check_storage
 lab_check "Fixes survive a reboot" check_persistence
 lab_check "No security regressions introduced" check_security

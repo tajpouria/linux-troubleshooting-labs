@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
 #
-# lab-01 setup: builds the HEALTHY baseline for web-01. Defects come later (break.sh).
+# storefront-down setup: builds the HEALTHY baseline for web-01. Defects come later (break.sh).
 #
-#   Mac --http:80--> nginx --proxy--> bookshop backend (python3, 127.0.0.1:8080, user "bookshop")
-#                                       |-- config:    /etc/bookshop/bookshop.conf (holds a secret)
-#                                       '-- audit log: /var/log/bookshop (dedicated 1 GB volume)
+#   host --http:80--> nginx --proxy--> bookshop backend (python3, 127.0.0.1:8080, user "bookshop")
+#                                        |-- config:    /etc/bookshop/bookshop.conf (holds a secret)
+#                                        '-- audit log: /var/log/bookshop (dedicated 1 GB volume)
 #
 # Provisioning fails if the smoke test at the end doesn't pass, so break.sh
 # always starts from a known-good system.
 #
-# Test hook: LAB_LOGVOL=loop forces the loop-file log volume instead of
-# looking for the extra disk (handy when testing outside a VM).
+# The log volume is the extra 1 GB disk on VMware Fusion. VirtualBox doesn't get
+# an extra disk, so there it's a 1 GB loop-file volume, which behaves the same.
+# Test hook: LAB_LOGVOL=loop forces the loop-file volume (handy when testing
+# outside a VM).
 
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 MARKER=/var/lib/lab/provisioned
 if [[ -e $MARKER ]]; then
-  echo "==> [setup] lab-01 is already provisioned; not touching it."
+  echo "==> [setup] This lab is already provisioned; not touching it."
   echo "    To reset: vagrant snapshot restore --no-provision broken"
-  echo "    or rebuild: vagrant destroy -f && vagrant up"
+  echo "    or rebuild: vagrant destroy -f, then vagrant up"
   exit 0
 fi
 
@@ -42,9 +44,9 @@ if ! id "$APP_USER" >/dev/null 2>&1; then
 fi
 
 # --- 3. Dedicated log volume ---------------------------------------------------
-# The Vagrantfile attaches an extra, blank 1 GB disk. Find it without assuming a
-# device name (nvme0n2, sdb, ...): a whole disk of about 1 GB with no partitions,
-# partition table or filesystem.
+# On VMware Fusion the Vagrantfile attaches an extra, blank 1 GB disk. Find it
+# without assuming a device name (nvme0n2, sdb, ...): a whole disk of about 1 GB
+# with no partitions, partition table or filesystem.
 find_spare_disk() {
   local name type size
   while read -r name type size; do
@@ -63,8 +65,8 @@ if [[ ${LAB_LOGVOL:-auto} != loop ]] && dev=$(find_spare_disk); then
   mkfs.ext4 -q -L "$LOG_LABEL" "$dev"
   fstab_line="UUID=$(blkid -s UUID -o value "$dev")  $LOG_MNT  ext4  defaults,nofail  0  2"
 else
-  log "WARNING: no blank 1 GB disk found, so using a loop-file volume instead."
-  log "         The lab works the same way. (Did the Vagrantfile's extra-disk trigger run?)"
+  log "No spare 1 GB disk attached (normal on VirtualBox), so using a 1 GB loop-file"
+  log "volume for $LOG_MNT. The lab works the same way."
   install -d -m 0755 /var/lib/lab
   img=/var/lib/lab/bookshop-logs.img
   fallocate -l 1G "$img"

@@ -1,7 +1,9 @@
 # Setting up an Apple Silicon Mac for the labs
 
-You install the following once. All of it runs natively on Apple Silicon, and
-the lab VMs are ARM64 too, so nothing is emulated.
+On a Mac the labs run on **VMware Fusion**, and the lab VMs are ARM64. You
+install the following once. All of it runs natively on Apple Silicon, so nothing
+is emulated. (VirtualBox isn't supported on macOS. On Windows, see
+[setup-windows.md](setup-windows.md).)
 
 | Component                       | What it does                                                                  | Install method           |
 | ------------------------------- | ----------------------------------------------------------------------------- | ------------------------ |
@@ -11,8 +13,9 @@ the lab VMs are ARM64 too, so nothing is emulated.
 | Vagrant VMware Utility          | small root service that lets Vagrant drive Fusion (networking, port forwards) | Homebrew                 |
 | `vagrant-vmware-desktop` plugin | Vagrant's VMware provider                                                     | `vagrant plugin install` |
 
-Plan on about 5 GB of free disk space: about 1 GB for the base box, plus the
-VM, plus a snapshot (which includes the VM's 2 GB of RAM).
+Plan on about 6 GB of free disk space per lab you keep: the VM, its disks,
+and a snapshot (which includes the VM's 1.5–2 GB of RAM). The base box needs
+about 1 GB more, once.
 
 > **Install order matters.** Install VMware Fusion **before** the Vagrant VMware
 > Utility. The utility checks for Fusion when it starts.
@@ -108,9 +111,10 @@ vagrant box list         # expect: bento/ubuntu-24.04 (vmware_desktop, <version>
 ## 7. Smoke test
 
 ```bash
-cd lab-01
+git clone https://github.com/tajpouria/linux-troubleshooting-labs.git
+cd linux-troubleshooting-labs/labs/beginner/storefront-down
 vagrant up
-vagrant ssh -c 'uname -m'    # expect: aarch64
+vagrant ssh -c "uname -m"    # expect: aarch64
 ```
 
 `uname -m` should print `aarch64`. Anything else means you got the wrong box
@@ -125,12 +129,12 @@ architecture.
 | `Vagrant encountered an error while attempting to connect to the Vagrant VMware Utility service` | Restart the utility (step 4). If Fusion was installed afterwards, restarting is required.                                                                                  |
 | `The provider 'vmware_desktop' could not be found`                                               | Install the plugin (step 5) and check that `vagrant plugin list` shows it.                                                                                                 |
 | `The box 'bento/ubuntu-24.04' could not be found` or no matching architecture                    | Make sure `vagrant --version` is ≥ 2.4 and you're online. Try step 6 explicitly with `--architecture arm64`.                                                               |
-| `vagrant up` hangs at "Waiting for the VM to receive an address" or times out                    | Set `vmware.gui = true` in the Vagrantfile and run `vagrant reload` to watch the console. Make sure Fusion isn't waiting on a dialog. Restart the utility.                 |
-| `Vagrant failed to create a new VMware networking device` / `Failed to enable device` | Fusion on macOS Big Sur and later can't create host-only networks with custom subnets. The lab Vagrantfiles avoid this by reusing Fusion's own host-only network. If you still see it, run `vagrant destroy -f`, then clean up the half-created network (see [below](#cleaning-up-a-failed-host-only-network)) and run `vagrant up` again. |
-| The site isn't reachable at `http://<LAB_IP>/` _before_ you've started fixing things | That's expected. The lab is broken on purpose. To test the network path itself, `ping <LAB_IP>` from the Mac. If ping fails too, check that Fusion's host-only bridge is up with `ifconfig bridge100`. As a last resort, use the `forwarded_port` fallback line in the Vagrantfile. |
-| `lsblk` in the VM shows no extra 1 GB disk, and `vagrant up` printed "using a loop-file volume"  | The extra disk wasn't attached. The lab still works the same way. To get the real disk, run `vagrant destroy -f && vagrant up` and check that it prints "Running trigger: Create extra disks". |
-| `no implicit conversion of nil into String` from `vagrant-vmware-desktop/cap/disk.rb` | A bug in the plugin's experimental `config.vm.disk` support with the bento box. The lab Vagrantfiles don't use that feature, so make sure your copy is up to date. |
-| You locked yourself out of SSH (for example with a firewall rule)                                | Set `vmware.gui = true`, run `vagrant reload`, and log in on the console as `vagrant` / `vagrant`. Or restore your snapshot.                                               |
+| `vagrant up` hangs at "Waiting for the VM to receive an address" or times out                    | Run `LAB_GUI=1 vagrant reload` to watch the console. Make sure Fusion isn't waiting on a dialog. Restart the utility.                 |
+| `Vagrant failed to create a new VMware networking device` / `Failed to enable device` | Fusion on macOS Big Sur and later can't create host-only networks with custom subnets. The labs avoid this by reusing Fusion's own host-only network (see `common/vagrant/lab.rb`). If you still see it, run `vagrant destroy -f`, then clean up the half-created network (see [below](#cleaning-up-a-failed-host-only-network)) and run `vagrant up` again. |
+| The site isn't reachable at `http://<LAB_IP>/` _before_ you've started fixing things | That's expected. The lab is broken on purpose. To test the network path itself, `ping <LAB_IP>` from the Mac. If ping fails too, check that Fusion's host-only bridge is up with `ifconfig bridge100`. As a last resort, run `LAB_PORT_FORWARD=1 vagrant reload` and use `http://localhost:80NN/` (8000 + the lab's host octet, e.g. 8011). |
+| `lsblk` in the VM shows no extra 1 GB disk, and `vagrant up` printed "using a 1 GB loop-file volume"  | The extra disk wasn't attached. The lab still works the same way. To get the real disk, run `vagrant destroy -f`, then `vagrant up`, and check that it prints "Running trigger: Create extra disks". |
+| `no implicit conversion of nil into String` from `vagrant-vmware-desktop/cap/disk.rb` | A bug in the plugin's experimental `config.vm.disk` support with the bento box. The labs don't use that feature, so make sure your copy is up to date. |
+| You locked yourself out of SSH (for example with a firewall rule)                                | Run `LAB_GUI=1 vagrant reload` and log in on the console as `vagrant` / `vagrant`. Or restore your snapshot.                                               |
 
 ### Cleaning up a failed host-only network
 

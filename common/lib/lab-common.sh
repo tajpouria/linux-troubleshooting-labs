@@ -1,9 +1,9 @@
 # shellcheck shell=bash
 #
-# lab-common.sh: helpers shared by every level's check script.
+# lab-common.sh: helpers shared by every lab's check script.
 #
 # Installed in the VM at /usr/local/lib/lab/lab-common.sh by common/provision/base.sh.
-# A level's check.sh sources this file, defines one function per check, then:
+# A lab's check.sh sources this file, defines one function per check, then:
 #
 #   lab_require_root
 #   lab_begin

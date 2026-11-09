@@ -1,10 +1,11 @@
-# Lab 01: The storefront is down
+# The storefront is down
 
-**Difficulty:** Beginner · **Time:** 45–90 minutes · **Host:** `web-01` at `<LAB_IP>`
+**Level:** Beginner · **Time:** 45–90 minutes · **Host:** `web-01` at `<LAB_IP>`
 
-`<LAB_IP>` is address `.11` on Fusion's host-only network, which has a
-different subnet on every Mac (for example `172.16.129.11`). `vagrant up` prints
-it at the end.
+`<LAB_IP>` is address `.11` on your computer's host-only network. On Windows
+with VirtualBox that's `192.168.56.11`. On a Mac, Fusion's host-only network has
+a different subnet on every machine (for example `172.16.129.11`).
+`vagrant up` prints the address at the end.
 
 Pinewood Books' online shop stopped working overnight, and you're the day-shift
 SRE. Several separate problems interact, much like a real incident. Fixing one
@@ -54,10 +55,12 @@ you're ready:
 
 ## Start
 
-Do the [one-time setup](../docs/setup-macos.md) first, then:
+Do the one-time setup for [macOS](../../../docs/setup-macos.md) or
+[Windows](../../../docs/setup-windows.md) first. Then, from the repository root
+(the commands are the same in Terminal and PowerShell):
 
 ```bash
-cd lab-01
+cd labs/beginner/storefront-down
 vagrant up                     # ~5 minutes the first time (downloads the box)
 vagrant snapshot save broken   # reset point. Take it now, before you touch anything
 vagrant ssh
@@ -72,18 +75,18 @@ and start investigating.
 - Don't disable security controls to make things work.
 - Your fix must survive a reboot. You can test that with `sudo reboot`.
 - Check your progress with `sudo lab-check`. Done means **6/6 PASS**.
-- One check needs a real request from your Mac: open `http://<LAB_IP>/` in
-  your browser once you think the site works.
+- One check needs a real request from your computer: open `http://<LAB_IP>/`
+  in your browser once you think the site works.
 
 ## The checks
 
 ```text
- lab-01  The storefront is down
+ storefront-down  The storefront is down
  ------------------------------------------------------------
  [FAIL] 1. Backend application is running and healthy
  [FAIL] 2. Storefront loads through the web server (http://localhost/)
  [FAIL] 3. Storefront is reachable from outside the server
-           Needs a successful page load from your Mac: open http://<LAB_IP>/ and re-run.
+           Needs a successful page load from your computer: open http://<LAB_IP>/ and re-run.
  [FAIL] 4. Log storage has healthy free space and is stable
  [FAIL] 5. Fixes survive a reboot
  [PASS] 6. No security regressions introduced
@@ -101,18 +104,18 @@ security.
 
 ```bash
 vagrant snapshot restore --no-provision broken   # back to the freshly broken state
-vagrant destroy -f && vagrant up                  # full rebuild
-vagrant destroy -f                                # remove the lab completely
+vagrant destroy -f                                # remove the lab completely...
+vagrant up                                        # ...and rebuild it from scratch
 ```
 
-See the [lab lifecycle](../README.md#lab-lifecycle) for suspend/resume and
+See the [lab lifecycle](../../../README.md#lab-lifecycle) for suspend/resume and
 other commands.
 
 ## What's in this folder
 
 | File | Purpose | Spoilers? |
 |---|---|---|
-| `Vagrantfile` | VM: Ubuntu 24.04 ARM64, 2 vCPU, 2 GB RAM, private IP, extra 1 GB disk | no |
+| `Vagrantfile` | VM: Ubuntu 24.04, 2 vCPU, 2 GB RAM, private IP, 1 GB log volume (an extra disk on VMware Fusion, a loop file on VirtualBox) | no |
 | `TICKET.md` | the incident ticket | no |
 | `HINTS.md` | progressive hints | collapsed |
 | `check.sh` | becomes `lab-check` in the VM | source only |
