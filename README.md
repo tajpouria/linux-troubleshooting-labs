@@ -112,6 +112,11 @@ suggested order.
    vague to specific. **Done?** Write your post-incident note, then compare it
    with `SOLUTIONS.md`.
 
+6. **Want a mentor?** Point an AI assistant at
+   [docs/ai-mentor.md](docs/ai-mentor.md). It coaches you through a lab round
+   by round, with questions, corrections and nudges, without giving away the
+   answers.
+
 > **Windows tip:** in PowerShell, `curl` is a different command. Type `curl.exe`
 > when a lab asks you to run `curl` on your computer (inside the VM, `curl` is
 > fine).
@@ -185,7 +190,8 @@ around the server. Only the evidence is there.
 ├── README.md                    you are here
 ├── docs/
 │   ├── setup-macos.md           one-time setup: Apple Silicon Mac + VMware Fusion
-│   └── setup-windows.md         one-time setup: Windows + VirtualBox
+│   ├── setup-windows.md         one-time setup: Windows + VirtualBox
+│   └── ai-mentor.md             how an AI assistant should mentor you through a lab
 ├── common/                      shared by every lab
 │   ├── vagrant/lab.rb           the VM plumbing: box, hypervisor, network, disks, provisioning
 │   ├── lib/lab-common.sh        PASS/FAIL helpers for check scripts (-> /usr/local/lib/lab/)
