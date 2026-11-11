@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Linux Troubleshooting Labs: Beginner+, "It's slow, then it's not"
+#
+#   vagrant up                      # build web-03 and start the incident (~6 min)
+#   vagrant snapshot save broken    # your reset point: take it right away
+#   vagrant ssh                     # go fix it, then check with: sudo lab-check
+#
+# Hosts: macOS on Apple Silicon with VMware Fusion, or Windows with VirtualBox.
+# The VM plumbing shared by all labs lives in common/vagrant/lab.rb.
+
+Vagrant.require_version ">= 2.4.0" # config.vm.box_architecture needs 2.4+
+
+require_relative "../../../common/vagrant/lab"
+
+Lab.define(__dir__,
+  id:         "storefront-hiccups",
+  level:      "Beginner+",
+  title:      "It's slow, then it's not",
+  hostname:   "web-03",
+  host_octet: 13,   # unique per lab: the VM's address on the host-only network
+  cpus:       2,
+  memory:     1536, # MB
+  # The shopping-cart volume (/var/lib/storefront/sessions) is a 512 MB
+  # loop-file volume that setup.sh creates, the same on every hypervisor.
+)

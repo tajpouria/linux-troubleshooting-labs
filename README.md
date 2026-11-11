@@ -48,13 +48,13 @@ suggested order.
 
 | Lab | Scenario | Skills |
 |---|---|---|
-| *planned* | "It's slow, then it's not" | DNS resolution, cron and systemd timers, log rotation, inode exhaustion, time sync |
+| [storefront-hiccups](labs/beginner-plus/storefront-hiccups/) | It's slow, then it's not | measuring over time, correlating symptoms with schedules, cron and systemd timers, log rotation, file ownership, inode exhaustion, open files |
 
 ### Intermediate
 
 | Lab | Scenario | Skills |
 |---|---|---|
-| *planned* | "Can't connect" | routing, MTU, nftables, TLS certificate expiry, ephemeral ports, conntrack |
+| *planned* | "Can't connect" | DNS resolution, routing, MTU, nftables, TLS certificate expiry and time sync, ephemeral ports, conntrack |
 | *planned* | "Something keeps killing it" | memory pressure, the OOM killer, swap, cgroup memory limits, leaks |
 | *planned* | "Too many open files" | kernel parameters (`sysctl`), ulimits, `somaxconn`, `file-max`, backlog drops |
 
@@ -270,7 +270,9 @@ Ubuntu 24.04 container with systemd as PID 1. Copy the repo in, put
 (`/tmp/lab-common.sh`, `/tmp/lab-check`, `/tmp/lab-ticket.md`), run `base.sh`
 with the `LAB_*` variables, then `setup.sh` and `break.sh`, then `lab-check`.
 `LAB_LOGVOL=loop` makes storefront-down's `setup.sh` use a loop-file volume, and
-slow-storefront expects 2 CPUs (`docker run --cpuset-cpus=0,1`).
+slow-storefront expects 2 CPUs (`docker run --cpuset-cpus=0,1`). Docker's
+Ubuntu image ships `/usr/sbin/policy-rc.d`, which blocks `invoke-rc.d` (nginx's
+logrotate script uses it to reopen logs), so delete it in the test container.
 
 ## License
 
