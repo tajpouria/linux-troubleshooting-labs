@@ -1,0 +1,25 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Linux Troubleshooting Labs: Intermediate, "Something keeps killing it"
+#
+#   vagrant up                      # build web-04 and start the incident (~7 min)
+#   vagrant snapshot save broken    # your reset point: take it right away
+#   vagrant ssh                     # go fix it, then check with: sudo lab-check
+#
+# Hosts: macOS on Apple Silicon with VMware Fusion, or Windows with VirtualBox.
+# The VM plumbing shared by all labs lives in common/vagrant/lab.rb.
+
+Vagrant.require_version ">= 2.4.0" # config.vm.box_architecture needs 2.4+
+
+require_relative "../../../common/vagrant/lab"
+
+Lab.define(__dir__,
+  id:         "storefront-keeps-dying",
+  level:      "Intermediate",
+  title:      "Something keeps killing it",
+  hostname:   "web-04",
+  host_octet: 14,   # unique per lab: the VM's address on the host-only network
+  cpus:       2,
+  memory:     1536, # MB. The shop's own memory budget (640 MB) is set inside the VM.
+)

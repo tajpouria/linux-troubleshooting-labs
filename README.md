@@ -55,7 +55,7 @@ suggested order.
 | Lab | Scenario | Skills |
 |---|---|---|
 | *planned* | "Can't connect" | DNS resolution, routing, MTU, nftables, TLS certificate expiry and time sync, ephemeral ports, conntrack |
-| *planned* | "Something keeps killing it" | memory pressure, the OOM killer, swap, cgroup memory limits, leaks |
+| [storefront-keeps-dying](labs/intermediate/storefront-keeps-dying/) | Something keeps killing it | the OOM killer and its reports, cgroup v2 memory limits and slices (`MemoryMax`), OOM scores (`oom_score_adj`), memory that grows without bound, VIRT vs RES, sparse files, swap |
 | *planned* | "Too many open files" | kernel parameters (`sysctl`), ulimits, `somaxconn`, `file-max`, backlog drops |
 
 ### Intermediate+
@@ -273,6 +273,12 @@ with the `LAB_*` variables, then `setup.sh` and `break.sh`, then `lab-check`.
 slow-storefront expects 2 CPUs (`docker run --cpuset-cpus=0,1`). Docker's
 Ubuntu image ships `/usr/sbin/policy-rc.d`, which blocks `invoke-rc.d` (nginx's
 logrotate script uses it to reopen logs), so delete it in the test container.
+Two caveats for storefront-keeps-dying: systemd ignores swap inside a container
+(there's no `swapfile.swap` unit, so `break.sh`'s swap step fails and has to be
+replaced with a plain `swapon /swapfile || true`), and its `setup.sh` runs
+`swapoff -a`, which in a privileged container turns off the swap of the whole VM
+that runs the containers (Docker Desktop and WSL2 share one). Note
+`cat /proc/swaps` before, and turn it back on with `swapon` afterwards.
 
 ## License
 
