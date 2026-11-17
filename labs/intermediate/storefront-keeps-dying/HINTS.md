@@ -36,6 +36,12 @@ Commands worth knowing for this lab: `systemctl status`, `systemctl show -p`,
 `systemd-cgtop`, `systemd-cgls`, `ps -o pid,rss,vsz,comm`, `pidstat -r`, `top`
 (press `M` to sort by memory), `free -h`, `swapon --show`, `du`.
 
+`journalctl` cuts long lines at the screen edge (you'll see a `>`), and the
+end of a line is often the useful part. Add `--no-pager` (and `-o cat` to drop
+the timestamps) to see whole lines. `systemd-cgls` only draws units that have
+a running process, so a dead unit is missing from it even when it belongs to
+the group.
+
 **Memory units.** `ps` and `/proc/<pid>/status` count in kB. The task table in
 a kernel OOM report counts in **pages**; a page is 4 kB on this server
 (`getconf PAGESIZE`). `systemctl` and `systemd-cgtop` use K/M/G.

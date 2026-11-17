@@ -160,6 +160,10 @@ Two more details make the problem stubborn:
 - **Restarting the agent doesn't help.** It saves its queue to a spool file on
   stop and loads it again at start. The night on-call's restarts were of the
   storefront, which isn't the problem at all.
+- **A VM left running for days looks worse than the ticket.** The agent keeps
+  growing until the slice is permanently full, so the storefront dies every
+  2 to 3 seconds (`NRestarts` in the thousands), not only at the refresh. The
+  cause and the fix are the same.
 - **The uptime monitor barely notices.** `/healthz` is down for the same few
   seconds as everything else, so a once-a-minute check usually misses it.
 
@@ -255,6 +259,10 @@ shield or boxing the agent in.
 - Stop or disable the agent: Monitoring needs it (check 6).
 - Fix it with swap (Issue C). The agent's idle queue moves to disk and the
   symptom goes away, but the queue keeps growing, now into swap.
+- Try to keep all the queued metrics (the CHG-0577 comment pushes that way).
+  The ticket already says losing the oldest ones is acceptable. Don't fix
+  `metrics-01` either: it's Platform's, and a bounded queue is needed even
+  when it's up.
 
 **Concepts.**
 - **The OOM killer.** When memory runs out and the kernel can't free enough
@@ -266,8 +274,13 @@ shield or boxing the agent in.
   systemd sets it with `OOMScoreAdjust=`. See it with `cat /proc/PID/oom_score`,
   `cat /proc/PID/oom_score_adj` or `choom -p PID`. (`oom_score` is shown on a
   scale where about 666 means "uses hardly any memory" and higher means "kill
-  me sooner"; −1000 makes it 0.) Shielding a process doesn't free any memory.
+  me sooner"; −1000 makes it 0. Compare scores between processes; the absolute
+  value isn't a size in MB.) Shielding a process doesn't free any memory.
   It only chooses a different victim.
+- **Exit codes have two meanings.** The refresh job fails with
+  `status=7/NOTRUNNING`. That label is systemd's old init-script name for 7.
+  curl's own meaning is "couldn't connect", and its message line says so.
+  When the two disagree, trust the message.
 - **systemd's `oom-kill` result is a courtesy.** systemd watches its units'
   cgroups and, when it notices that the kernel OOM-killed one of their
   processes, says so. When the process's exit wins the race, it only reports
@@ -277,7 +290,9 @@ shield or boxing the agent in.
   processes inside that cgroup are candidates. `oom_memcg` is the group that ran
   out; `task_memcg` is where the victim lived.
 - **Slices.** A systemd slice is a cgroup that groups units, so they can share
-  a limit. `systemd-cgls` shows the tree, `systemd-cgtop -m` shows memory per
+  a limit. `systemd-cgls` shows the tree (only units with a running process:
+  a dead unit is missing, so `systemctl show '*' --all -p Id,Slice,ActiveState`
+  is the reliable way to list a slice's members), `systemd-cgtop -m` shows memory per
   group, `systemctl status <unit>` shows `Memory:` with its peak, and
   `/sys/fs/cgroup/<slice>/memory.events` counts `oom` (hit its own limit) and
   `oom_kill` (processes killed in it, including below it).
@@ -415,7 +430,8 @@ that nothing. The result is a **sparse file**: 1 GB long, but with no disk
 blocks behind it. `mkswap` even warned ("/swapfile contains holes or other
 unsupported extents. This swap file can be rejected by kernel on swap
 activation!"), and `swapon` refuses it, because the
-kernel writes to swap by going straight to disk blocks and a hole has none. Kai
+kernel writes to swap by going straight to disk blocks and a hole has none
+(allocating one at that moment, with memory already full, could fail). Kai
 added the fstab line, ran `daemon-reload` and expected swap after the next boot.
 At every boot since, systemd has tried, failed and logged it, and the server
 has had no swap at all.
