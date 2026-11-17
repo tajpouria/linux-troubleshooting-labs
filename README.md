@@ -49,6 +49,7 @@ suggested order.
 | Lab | Scenario | Skills |
 |---|---|---|
 | [storefront-hiccups](labs/beginner-plus/storefront-hiccups/) | It's slow, then it's not | measuring over time, correlating symptoms with schedules, cron and systemd timers, log rotation, file ownership, inode exhaustion, open files |
+| [storefront-out-of-sync](labs/beginner-plus/storefront-out-of-sync/) | Out of sync with the warehouse | system calls and `strace` (running, following children, filtering, attaching, timing), `errno`, file descriptors, `/proc/<pid>`, what a process is waiting for, file locks (`/proc/locks`, `lsof`), path permissions (`namei`), a process's environment |
 
 ### Intermediate
 

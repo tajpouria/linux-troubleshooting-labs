@@ -145,6 +145,11 @@ module Lab
       vmware.cpus   = lab.fetch(:cpus)
       vmware.memory = lab.fetch(:memory)
       vmware.gui    = gui
+      # Fusion on Apple Silicon sets the VM's clock to the Mac's *local* time,
+      # and Linux reads it as UTC. So on a Mac east of UTC every boot starts
+      # hours in the future until time sync jumps the clock back, and calendar
+      # timers armed before the jump fire hours late. Keep the VM's clock in UTC.
+      vmware.vmx["rtc.diffFromUTC"] = "0"
       # The disk entries go into the VM's .vmx only when the VM is first
       # created. After a snapshot, VMware points them at delta files, and
       # re-applying them on every boot would make the VM write to the snapshot's
